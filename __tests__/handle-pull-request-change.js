@@ -16,7 +16,7 @@ describe('handlePullRequestChange', () => {
     const expectedBody = {
       state: 'pending',
       target_url: 'https://github.com/probot/semantic-pull-requests',
-      description: 'add a semantic commit or PR title',
+      description: 'add a semantic commit or add a semantic PR title',
       context: 'Semantic Pull Request'
     }
 
@@ -50,7 +50,7 @@ describe('handlePullRequestChange', () => {
         .reply(200)
         .get('/repos/sally/project-x/contents/.github/semantic.yml')
         .reply(200, getConfigResponse(`
-          validateTitle: true,
+          validateCommits: false
           scopes:
             - scope1
             - scope2
@@ -77,7 +77,7 @@ describe('handlePullRequestChange', () => {
         .reply(200)
         .get('/repos/sally/project-x/contents/.github/semantic.yml')
         .reply(200, getConfigResponse(`
-          validateTitle: true
+          validateCommits: false
           scopes:
             - scope1
             - scope2
@@ -104,6 +104,7 @@ describe('handlePullRequestChange', () => {
         .reply(200)
         .get('/repos/sally/project-x/contents/.github/semantic.yml')
         .reply(200, getConfigResponse(`
+          validateTitle: false
           validateCommits: all
           scopes:
             - scope3
@@ -132,7 +133,7 @@ describe('handlePullRequestChange', () => {
         .reply(200)
         .get('/repos/sally/project-x/contents/.github/semantic.yml')
         .reply(200, getConfigResponse(`
-          validateTitle: true
+          validateCommits: false
           scopes:
             - scope1
             - scope2
@@ -144,7 +145,7 @@ describe('handlePullRequestChange', () => {
     })
   })
 
-  describe('when `validateCommits` is set to `all` in config', () => {
+  describe('when `validateTitle` is set to `false` and `validateCommits` is set to `all` in config', () => {
     test('sets `pending` status if PR has no semantic commits', async () => {
       const context = buildContext()
       context.payload.pull_request.title = 'do a thing'
@@ -161,7 +162,10 @@ describe('handlePullRequestChange', () => {
         .post('/repos/sally/project-x/statuses/abcdefg', expectedBody)
         .reply(200)
         .get('/repos/sally/project-x/contents/.github/semantic.yml')
-        .reply(200, getConfigResponse('validateCommits: all'))
+        .reply(200, getConfigResponse(`
+          validateTitle: false
+          validateCommits: all
+        `))
 
       await handlePullRequestChange(context)
       expect(mock.isDone()).toBe(true)
@@ -183,7 +187,10 @@ describe('handlePullRequestChange', () => {
         .post('/repos/sally/project-x/statuses/abcdefg', expectedBody)
         .reply(200)
         .get('/repos/sally/project-x/contents/.github/semantic.yml')
-        .reply(200, getConfigResponse('validateCommits: all'))
+        .reply(200, getConfigResponse(`
+          validateTitle: false
+          validateCommits: all
+        `))
 
       await handlePullRequestChange(context)
       expect(mock.isDone()).toBe(true)
@@ -205,7 +212,10 @@ describe('handlePullRequestChange', () => {
         .post('/repos/sally/project-x/statuses/abcdefg', expectedBody)
         .reply(200)
         .get('/repos/sally/project-x/contents/.github/semantic.yml')
-        .reply(200, getConfigResponse('validateCommits: all'))
+        .reply(200, getConfigResponse(`
+          validateTitle: false
+          validateCommits: all
+        `))
 
       await handlePullRequestChange(context)
       expect(mock.isDone()).toBe(true)
@@ -227,14 +237,17 @@ describe('handlePullRequestChange', () => {
         .post('/repos/sally/project-x/statuses/abcdefg', expectedBody)
         .reply(200)
         .get('/repos/sally/project-x/contents/.github/semantic.yml')
-        .reply(200, getConfigResponse('validateCommits: all'))
+        .reply(200, getConfigResponse(`
+          validateTitle: false
+          validateCommits: all
+        `))
 
       await handlePullRequestChange(context)
       expect(mock.isDone()).toBe(true)
     })
   })
 
-  describe('when `validateCommits` is set to `any` in config', () => {
+  describe('when `validateTitle` is set to `false` in config', () => {
     test('sets `pending` status if no commits are semantic', async () => {
       const context = buildContext()
       context.payload.pull_request.title = 'fix: bananas'
@@ -251,7 +264,7 @@ describe('handlePullRequestChange', () => {
         .post('/repos/sally/project-x/statuses/abcdefg', expectedBody)
         .reply(200)
         .get('/repos/sally/project-x/contents/.github/semantic.yml')
-        .reply(200, getConfigResponse('validateCommits: any'))
+        .reply(200, getConfigResponse('validateTitle: false'))
 
       await handlePullRequestChange(context)
       expect(mock.isDone()).toBe(true)
@@ -273,7 +286,7 @@ describe('handlePullRequestChange', () => {
         .post('/repos/sally/project-x/statuses/abcdefg', expectedBody)
         .reply(200)
         .get('/repos/sally/project-x/contents/.github/semantic.yml')
-        .reply(200, getConfigResponse('validateCommits: any'))
+        .reply(200, getConfigResponse('validateTitle: false'))
 
       await handlePullRequestChange(context)
       expect(mock.isDone()).toBe(true)
@@ -295,14 +308,14 @@ describe('handlePullRequestChange', () => {
         .post('/repos/sally/project-x/statuses/abcdefg', expectedBody)
         .reply(200)
         .get('/repos/sally/project-x/contents/.github/semantic.yml')
-        .reply(200, getConfigResponse('validateCommits: any'))
+        .reply(200, getConfigResponse('validateTitle: false'))
 
       await handlePullRequestChange(context)
       expect(mock.isDone()).toBe(true)
     })
   })
 
-  describe('when `validateTitle` is set to `true` in config', () => {
+  describe('when `validateCommits` is set to `false` in config', () => {
     test('sets `pending` status if PR has no semantic PR title', async () => {
       const context = buildContext()
       context.payload.pull_request.title = 'do a thing'
@@ -319,7 +332,7 @@ describe('handlePullRequestChange', () => {
         .post('/repos/sally/project-x/statuses/abcdefg', expectedBody)
         .reply(200)
         .get('/repos/sally/project-x/contents/.github/semantic.yml')
-        .reply(200, getConfigResponse('validateTitle: true'))
+        .reply(200, getConfigResponse('validateCommits: false'))
 
       await handlePullRequestChange(context)
       expect(mock.isDone()).toBe(true)
@@ -341,7 +354,7 @@ describe('handlePullRequestChange', () => {
         .post('/repos/sally/project-x/statuses/abcdefg', expectedBody)
         .reply(200)
         .get('/repos/sally/project-x/contents/.github/semantic.yml')
-        .reply(200, getConfigResponse('validateTitle: true'))
+        .reply(200, getConfigResponse('validateCommits: false'))
 
       await handlePullRequestChange(context)
       expect(mock.isDone()).toBe(true)
@@ -363,21 +376,21 @@ describe('handlePullRequestChange', () => {
         .post('/repos/sally/project-x/statuses/abcdefg', expectedBody)
         .reply(200)
         .get('/repos/sally/project-x/contents/.github/semantic.yml')
-        .reply(200, getConfigResponse('validateTitle: true'))
+        .reply(200, getConfigResponse('validateCommits: false'))
 
       await handlePullRequestChange(context)
       expect(mock.isDone()).toBe(true)
     })
   })
 
-  describe('when `validateTitle` is set to `true` and `validateCommits` is set to `all` in config', () => {
+  describe('when `validateCommits` is set to `all` and `validationRule` is set to `and` in config', () => {
     test('sets `pending` status if PR has no semantic PR title', async () => {
       const context = buildContext()
       context.payload.pull_request.title = 'do a thing'
       const expectedBody = {
         state: 'pending',
         target_url: 'https://github.com/probot/semantic-pull-requests',
-        description: 'add a semantic commit AND PR title',
+        description: 'make sure every commit is semantic and add a semantic PR title',
         context: 'Semantic Pull Request'
       }
 
@@ -387,7 +400,7 @@ describe('handlePullRequestChange', () => {
         .post('/repos/sally/project-x/statuses/abcdefg', expectedBody)
         .reply(200)
         .get('/repos/sally/project-x/contents/.github/semantic.yml')
-        .reply(200, getConfigResponse('validateTitle: true\nvalidateCommits: all'))
+        .reply(200, getConfigResponse('validateCommits: all\nvalidationRule: and'))
 
       await handlePullRequestChange(context)
       expect(mock.isDone()).toBe(true)
@@ -399,7 +412,7 @@ describe('handlePullRequestChange', () => {
       const expectedBody = {
         state: 'pending',
         target_url: 'https://github.com/probot/semantic-pull-requests',
-        description: 'add a semantic commit AND PR title',
+        description: 'make sure every commit is semantic and add a semantic PR title',
         context: 'Semantic Pull Request'
       }
 
@@ -409,7 +422,7 @@ describe('handlePullRequestChange', () => {
         .post('/repos/sally/project-x/statuses/abcdefg', expectedBody)
         .reply(200)
         .get('/repos/sally/project-x/contents/.github/semantic.yml')
-        .reply(200, getConfigResponse('validateTitle: true\nvalidateCommits: all'))
+        .reply(200, getConfigResponse('validateCommits: all\nvalidationRule: and'))
 
       await handlePullRequestChange(context)
       expect(mock.isDone()).toBe(true)
@@ -421,7 +434,7 @@ describe('handlePullRequestChange', () => {
       const expectedBody = {
         state: 'pending',
         target_url: 'https://github.com/probot/semantic-pull-requests',
-        description: 'add a semantic commit AND PR title',
+        description: 'make sure every commit is semantic and add a semantic PR title',
         context: 'Semantic Pull Request'
       }
 
@@ -431,7 +444,7 @@ describe('handlePullRequestChange', () => {
         .post('/repos/sally/project-x/statuses/abcdefg', expectedBody)
         .reply(200)
         .get('/repos/sally/project-x/contents/.github/semantic.yml')
-        .reply(200, getConfigResponse('validateTitle: true\nvalidateCommits: all'))
+        .reply(200, getConfigResponse('validateCommits: all\nvalidationRule: and'))
 
       await handlePullRequestChange(context)
       expect(mock.isDone()).toBe(true)
@@ -443,7 +456,7 @@ describe('handlePullRequestChange', () => {
       const expectedBody = {
         state: 'success',
         target_url: 'https://github.com/probot/semantic-pull-requests',
-        description: 'ready to be merged, squashed or rebased',
+        description: 'ready to be squashed, merged or rebased',
         context: 'Semantic Pull Request'
       }
 
@@ -453,21 +466,21 @@ describe('handlePullRequestChange', () => {
         .post('/repos/sally/project-x/statuses/abcdefg', expectedBody)
         .reply(200)
         .get('/repos/sally/project-x/contents/.github/semantic.yml')
-        .reply(200, getConfigResponse('validateTitle: true\nvalidateCommits: all'))
+        .reply(200, getConfigResponse('validateCommits: all\nvalidationRule: and'))
 
       await handlePullRequestChange(context)
       expect(mock.isDone()).toBe(true)
     })
   })
 
-  describe('when `validateTitle` is set to `true` and `validateCommits` is set to `any` in config', () => {
+  describe('when `validationRule` is set to `and` in config', () => {
     test('sets `pending` status if no commits are semantic', async () => {
       const context = buildContext()
       context.payload.pull_request.title = 'fix: bananas'
       const expectedBody = {
         state: 'pending',
         target_url: 'https://github.com/probot/semantic-pull-requests',
-        description: 'add a semantic commit AND PR title',
+        description: 'add a semantic commit and add a semantic PR title',
         context: 'Semantic Pull Request'
       }
 
@@ -477,7 +490,7 @@ describe('handlePullRequestChange', () => {
         .post('/repos/sally/project-x/statuses/abcdefg', expectedBody)
         .reply(200)
         .get('/repos/sally/project-x/contents/.github/semantic.yml')
-        .reply(200, getConfigResponse('validateTitle: true\nvalidateCommits: any'))
+        .reply(200, getConfigResponse('validationRule: and'))
 
       await handlePullRequestChange(context)
       expect(mock.isDone()).toBe(true)
@@ -489,7 +502,7 @@ describe('handlePullRequestChange', () => {
       const expectedBody = {
         state: 'success',
         target_url: 'https://github.com/probot/semantic-pull-requests',
-        description: 'ready to be merged, squashed or rebased',
+        description: 'ready to be squashed, merged or rebased',
         context: 'Semantic Pull Request'
       }
 
@@ -499,7 +512,7 @@ describe('handlePullRequestChange', () => {
         .post('/repos/sally/project-x/statuses/abcdefg', expectedBody)
         .reply(200)
         .get('/repos/sally/project-x/contents/.github/semantic.yml')
-        .reply(200, getConfigResponse('validateTitle: true\nvalidateCommits: any'))
+        .reply(200, getConfigResponse('validationRule: and'))
 
       await handlePullRequestChange(context)
       expect(mock.isDone()).toBe(true)
@@ -511,7 +524,7 @@ describe('handlePullRequestChange', () => {
       const expectedBody = {
         state: 'success',
         target_url: 'https://github.com/probot/semantic-pull-requests',
-        description: 'ready to be merged, squashed or rebased',
+        description: 'ready to be squashed, merged or rebased',
         context: 'Semantic Pull Request'
       }
 
@@ -521,7 +534,7 @@ describe('handlePullRequestChange', () => {
         .post('/repos/sally/project-x/statuses/abcdefg', expectedBody)
         .reply(200)
         .get('/repos/sally/project-x/contents/.github/semantic.yml')
-        .reply(200, getConfigResponse('validateTitle: true\nvalidateCommits: any'))
+        .reply(200, getConfigResponse('validationRule: and'))
 
       await handlePullRequestChange(context)
       expect(mock.isDone()).toBe(true)
@@ -549,6 +562,7 @@ describe('handlePullRequestChange', () => {
         .reply(200)
         .get('/repos/sally/project-x/contents/.github/semantic.yml')
         .reply(200, getConfigResponse(`
+          validateTitle: false
           validateCommits: all
           scopes:
             - scope1
@@ -581,6 +595,7 @@ describe('handlePullRequestChange', () => {
         .reply(200)
         .get('/repos/sally/project-x/contents/.github/semantic.yml')
         .reply(200, getConfigResponse(`
+          validateTitle: false
           validateCommits: all
           allowMergeCommits: false
           `))
